@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USERS ───────────────────────────────────────────────────
+model User {
+  id                BigInt    @id                    // Telegram user ID
+  username          String?
+  firstName         String?
+  photoUrl          String?
+
+  // Three-balance system
+  pointsBalance     Int       @default(0)            // Unsettled points (earned from ads today)
+  tonBalance        Float     @default(0)            // Withdrawable TON balance
+  tonWithdrawn      Float     @default(0)            // Lifetime TON withdrawn
+  totalPointsEarned Int       @default(0)            // Lifetime points for stats
+
+  // Game state
+  coins             Int       @default(0)            // In-game coins (cosmetics, not withdrawable)
+  streak            Int       @default(0)
+  longestStreak     Int       @default(0)
+  lastSpinDate      String?                          // "YYYY-MM-DD"
+  adSpinsToday      Int       @default(0)
+  adScoreBoost      Boolean   @default(false)
+  streakShield      Boolean   @default(false)
+
+  // Anti-abuse
+  trustScore        Int       @default(50)           // 0-100
+  deviceFingerprint String?                          // Hashed fingerprint
+  activeDays        Int       @default(0)            // Count of unique active calendar days
+  lastActiveDate    String?                          // "YYYY-MM-DD"
+  isBanned          Boolean   @default(false)
+  banReason         String?
+
+  // Withdrawal
+  tonAddress        String?                          // Last used TON wallet address
+  lastWithdrawAt    String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  withdrawals       Withdrawal[]
+  adViews           AdView[]
+  spinLogs          SpinLog[]
+  gameScores        MiniGameScore[]
+  collectibles      UserCollectible[]
+  referralsMade     Referral[]    @relation("Referrer")
+  referralsReceived Referral[]    @relation("Referred")
+}
+
+// ─── AD TRACKING ─────────────────────────────────────────────
+model AdView {
+  id              String    @id @default(uuid())
+  userId          BigInt
+  user            User      @relation(fields: [userId], references: [id])
+  adType          String                             // "rewarded_spin", "rewarded_score", "earn_coins", "earn_ticket"
+  pointsAwarded   Int                                // Points given for this view
+  sessionId       String?                            // Frontend session identifier
+  fingerprintHash String?                            // Device fingerprint at view time
+  settled         Boolean   @default(false)          // Has this been included in daily settlement?
+  settlementDate  String?                            // "YYYY-MM-DD" when settled
+  viewedAt        DateTime  @default(now())
+
+  @@index([userId, viewedAt])
+  @@index([settled, viewedAt])
+  @@index([userId, adType, viewedAt])
+}
+
+// ─── DAILY SETTLEMENT ────────────────────────────────────────
+model DailySettlement {
+  id              String    @id @default(uuid())
+  date            String    @unique                  // "YYYY-MM-DD"
+  totalRevenue    Float                              // Total Adsgram revenue for the day (USD)
+  userShareUsd    Float                              // 50% of revenue
+  totalPoints     Int                                // Sum of all points earned that day
+  pointValueUsd   Float                              // userShareUsd / totalPoints
+  tonPriceUsd     Float                              // TON/USD rate used for conversion
+  pointValueTon   Float                              // Final: how much TON per point
+  usersSettled    Int                                // Number of users who received TON
+  totalTonPaid    Float                              // Total TON distributed
+  settledAt       DateTime  @default(now())
+}
+
+// ─── WITHDRAWALS ─────────────────────────────────────────────
+model Withdrawal {
+  id              String    @id @default(uuid())
+  userId          BigInt
+  user            User      @relation(fields: [userId], references: [id])
+  tonAddress      String
+  amountTon       Float                              // TON to send
+  fee             Float     @default(0.005)          // Network fee deducted
+  status          String    @default("PENDING")      // PENDING | PROCESSING | CONFIRMED | FAILED | REJECTED
+  txHash          String?
+  failReason      String?
+  reviewNote      String?                            // Admin note if manually reviewed
+  trustScoreAt    Int                                // User's trust score at time of request
+  createdAt       DateTime  @default(now())
+  processedAt     String?
+  confirmedAt     String?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── GAME DATA ───────────────────────────────────────────────
+model SpinLog {
+  id          String   @id @default(uuid())
+  userId      BigInt
+  user        User     @relation(fields: [userId], references: [id])
+  rewardType  String                                 // "coins", "ticket", "collectible", "points"
+  rewardValue String
+  isAdSpin    Boolean  @default(false)
+  spunAt      DateTime @default(now())
+
+  @@index([userId, spunAt])
+}
+
+model MiniGameScore {
+  id         String   @id @default(uuid())
+  userId     BigInt
+  user       User     @relation(fields: [userId], references: [id])
+  gameType   String
+  score      Int
+  rawScore   Int
+  isBoosted  Boolean  @default(false)
+  playedDate String
+  playedAt   DateTime @default(now())
+
+  @@unique([userId, playedDate])
+  @@index([playedDate, score])
+}
+
+model UserCollectible {
+  userId        BigInt
+  collectibleId String
+  user          User     @relation(fields: [userId], references: [id])
+  obtainedAt    DateTime @default(now())
+
+  @@id([userId, collectibleId])
+}
+
+model Referral {
+  referrerId   BigInt
+  referredId   BigInt
+  referrer     User      @relation("Referrer", fields: [referrerId], references: [id])
+  referred     User      @relation("Referred", fields: [referredId], references: [id])
+  bonusAwarded Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  @@id([referrerId, referredId])
+}
+
+// ─── SYSTEM ──────────────────────────────────────────────────
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model AdminLog {
+  id        String   @id @default(uuid())
+  action    String                                   // "settlement", "ban_user", "approve_withdrawal", etc.
+  details   String                                   // JSON string with details
+  adminId   String                                   // Who performed the action
+  createdAt DateTime @default(now())
+}

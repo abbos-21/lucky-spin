@@ -1,0 +1,69 @@
+# ─── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Environment / Secrets ────────────────────────────────────
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+client/.env.local
+
+# ─── Build outputs ────────────────────────────────────────────
+dist/
+build/
+client/dist/
+server/dist/
+
+# ─── Database ─────────────────────────────────────────────────
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+server/prisma/*.db
+server/prisma/*.db-journal
+
+# ─── Prisma generated client ──────────────────────────────────
+server/node_modules/.prisma/
+
+# ─── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── OS / Editor ──────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── TypeScript ───────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Vite ─────────────────────────────────────────────────────
+.vite/
+
+# ─── Testing ──────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ─── Misc ─────────────────────────────────────────────────────
+.cache/
+.temp/
+*.pem

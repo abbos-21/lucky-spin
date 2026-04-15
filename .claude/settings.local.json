@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(npx ts-node-dev:*)",
+      "Bash(npx vite:*)",
+      "Bash(netstat -ano)",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -I{} taskkill /PID {} /F)",
+      "Bash(findstr \":3001 \")",
+      "Bash(taskkill /PID 18556 /F)",
+      "Bash(cmd /c \"taskkill /PID 18556 /F\")",
+      "Bash(powershell -Command \"Stop-Process -Id 18556 -Force\")",
+      "Bash(powershell -Command \"Start-Sleep 6; Invoke-WebRequest -Uri 'http://localhost:3001/health' -UseBasicParsing | Select-Object -ExpandProperty Content\")",
+      "Bash(powershell -Command ':*)",
+      "Bash(powershell -Command 'Get-Process -Name '\\\\''node'\\\\'' | Where-Object { $_.MainWindowTitle -eq '\\\\'''\\\\'' } | Stop-Process -Force')",
+      "Bash(cat prisma/schema.prisma)",
+      "Bash(ls prisma/)"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base styles ──────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    overscroll-behavior: none;
+    /* Use Telegram theme background */
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+  }
+
+  /* Safe area insets for iOS notch / home bar */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ─── Custom utilities ─────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Disable text selection on interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth number transitions */
+  .number-transition {
+    transition: all 0.5s ease-out;
+  }
+}

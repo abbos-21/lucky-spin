@@ -1,0 +1,14 @@
+{
+  "name": "lucky-spin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "prisma:migrate": "cd server && npx prisma migrate dev",
+    "prisma:generate": "cd server && npx prisma generate",
+    "prisma:studio": "cd server && npx prisma studio"
+  }
+}
